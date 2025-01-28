@@ -1,6 +1,5 @@
 import streamlit as st
 import sqlite3
-from datetime import datetime
 import nltk
 from nltk.corpus import stopwords
 from nltk.tokenize import word_tokenize
@@ -39,7 +38,7 @@ def calculate_fuzzy_similarity(user_skill, job_skill):
     return fuzz.token_sort_ratio(preprocess_text(user_skill), preprocess_text(job_skill))
 
 # Match user skills to job features using fuzzy string matching and TF-IDF for descriptions
-def match_skills_and_description(user_skills, job_description, job_features, threshold=50):
+def match_skills_and_description(user_skills, job_description, job_features, threshold=70):
     matched_skills = []
     
     # Fuzzy matching for user skills and job features
@@ -102,7 +101,9 @@ st.title("Job Matcher")
 # User input for skills
 user_skills = st.text_input("Enter your skills (comma-separated)").split(',')
 user_skills = [skill.strip() for skill in user_skills if skill.strip()]
-
+cursor.execute("SELECT COUNT(*) FROM job_posts WHERE is_applied = 1")
+count = cursor.fetchone()[0]
+st.write(f'**Roles Applied:** {count}')
 def update_is_applied(job_id, applied_status):
     cursor.execute("UPDATE job_posts SET is_applied = ? WHERE id = ?", (applied_status, job_id))
     conn.commit()
@@ -112,6 +113,7 @@ def open_job_link(url):
 if user_skills:
     matching_jobs = get_matching_jobs(user_skills)
     st.write(f"**Roles found:** {len(matching_jobs)}")
+    
     for job in matching_jobs:
         with st.container():
             # Use a single column for the checkbox
