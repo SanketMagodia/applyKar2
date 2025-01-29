@@ -53,6 +53,9 @@ cd applyKar2
 ``` 
 pip install -r requirements.txt
 ```
+### 3. For Selenium code
+please open Selenium.py and enter ```USERNAME``` and ```PASSWORD``` for linkedin
+
 ## Notes
 - Ensure making virtual environment in the folder named ```env``` to make use of bat files
 - Ensure proper permissions to run ```app.bat``` on your machine.

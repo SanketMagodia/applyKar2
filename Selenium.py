@@ -14,8 +14,9 @@ from selenium.webdriver.chrome.options import Options
 How to run the code: python selenium.py --clear --clean "https://linkedin.com"
 
 '''
-
-
+# linkedin credentials
+USERNAME = ""
+PASSWORD = ""
 
 
 def clean_database(table_name='job_posts'):
@@ -95,8 +96,8 @@ def process_url(LINK, pages = 10):
     driver.get("https://www.linkedin.com/login")
 
     time.sleep(1)
-    driver.find_element(By.CSS_SELECTOR, 'input[id="username"]').send_keys("sanket4461@gmail.com")
-    driver.find_element(By.CSS_SELECTOR, 'input[id="password"]').send_keys("sank4444")
+    driver.find_element(By.CSS_SELECTOR, 'input[id="username"]').send_keys(USERNAME)
+    driver.find_element(By.CSS_SELECTOR, 'input[id="password"]').send_keys(PASSWORD)
     driver.find_element(By.CSS_SELECTOR, 'button[type="submit"]').click()
     time.sleep(1)
     driver.get(LINK)
