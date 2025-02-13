@@ -2,7 +2,7 @@
 # applyKar2
 
 
-ApplyKar2 is a streamlined job application and management tool. This repository contains two main scripts to run the application and manage the database.
+ApplyKar2 is a streamlined LinkedIn job application and management tool. This repository contains two main scripts to run the application and manage the database.
 
 
 
@@ -17,7 +17,13 @@ ApplyKar2 is a streamlined job application and management tool. This repository 
 ## Prerequisites
 
  - Python 3.x installed on your machine.
+ - Download and setup suitable webdrivers for your browser
  - Required Python libraries (```install using pip install -r req.txt```)
+ - Setup and create .env file with your id and password for linkedIn. .env file will look like (```USER_NAME = ''
+PASSWORD = ''```)
+ - Setup content.JSON with your own content
+ - For cover letter generation, just get any (```.gguf```) file and keep it in models folder and update the models name in llm.py
+   
 ## Scripts
 ### 1. Run the Web Application(if virtual environment named ```env``` in project folder)
 #### Simply run ```app.bat``` to start the application site.
