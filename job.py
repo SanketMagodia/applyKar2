@@ -9,6 +9,8 @@ from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 import re
 import webbrowser
+import llm
+import Selenium
 
 nltk.download('punkt', quiet=True)
 nltk.download('stopwords', quiet=True)
@@ -96,38 +98,74 @@ def get_matching_jobs(user_skills):
     
     return sorted(matching_jobs, key=lambda x: x['match_score'], reverse=True)
     
-st.title("Job Matcher")
+st.title("Lets see what you looking for ...")
 
 # User input for skills
+col1, col2 = st.columns([1, 1], vertical_alignment='center')
+with col1:
+    if st.button("filter and remove old Jobs"):
+        Selenium.remove_duplicates_and_old_jobs()
+with col2:
+    if st.button("Clean database"):    
+        Selenium.clean_database()
+
+with st.expander("Scrape new jobs"):
+    col1, col2, col3 = st.columns([1, 1, 0.3], vertical_alignment='center')
+    with col1:
+        url = st.text_input("Enter URL")
+    with col2:
+        pages = st.text_input("Enter number of pages")
+    with col3:
+        if st.button("Process"):
+            Selenium.process_url(LINK = url, pages = int(pages))
+    
 user_skills = st.text_input("Enter your skills (comma-separated)").split(',')
 user_skills = [skill.strip() for skill in user_skills if skill.strip()]
 cursor.execute("SELECT COUNT(*) FROM job_posts WHERE is_applied = 1")
 count = cursor.fetchone()[0]
-st.write(f'**Roles Applied:** {count}')
+cursor.execute("SELECT COUNT(*) FROM job_posts")
+NoOfJobs = cursor.fetchone()[0]
+st.write(f'**Roles Applied:** {count} / {NoOfJobs}')
+
 def update_is_applied(job_id, applied_status):
     cursor.execute("UPDATE job_posts SET is_applied = ? WHERE id = ?", (applied_status, job_id))
     conn.commit()
 def open_job_link(url):
     webbrowser.open(url, new=2)
 
+def generate_text_function(description):
+    return llm.generate_cover_letter(description)  
+def print_text_function(text, title, company):
+    llm.create_cover_letter_pdf(text, title, company)
+with st.sidebar:
+    # Create a text area inside the expander
+    st.write(f"**Cover Letter Maker**")
+    title = st.text_input("Title:")
+    company = st.text_input("Company:")
+    text_input = st.text_area("Cover Letter Generator:", height=400)
+    if st.button("Save pdf"):
+        print_text_function(text_input, title, company)
 if user_skills:
     matching_jobs = get_matching_jobs(user_skills)
     st.write(f"**Roles found:** {len(matching_jobs)}")
     
     for job in matching_jobs:
         with st.container():
-            # Use a single column for the checkbox
             col1, col2 = st.columns([0.3, 1], vertical_alignment='center')
 
-            # Checkbox on the left side in a single column
             with col1:
                 applied = st.checkbox("Applied", key=f"applied_{job['id']}", value=job['is_applied'] == 1)
 
-                # Update the applied status when checkbox is clicked
-                if applied != (job['is_applied'] == 1):  # If state has changed
+                if applied != (job['is_applied'] == 1):
                     update_is_applied(job['id'], 1 if applied else 0)
+                
                 if st.button(f"Apply for {job['title']}", key=f"apply_{job['id']}"):
                     open_job_link(job['application_link'])
+                
+                # New button to generate text
+                if st.button("Generate Cover letter", key=f"generate_{job['id']}"):
+                    generated_text = generate_text_function(job['description'])  # Replace with your text generation function
+                    st.session_state[f"text_{job['id']}"] = generated_text
             # Job Title and Company in the second column
             with col2:
                 # Card-like container with styling
@@ -160,6 +198,10 @@ if user_skills:
                         </div>
                     </div>
                 """)
+            if f"text_{job['id']}" in st.session_state:
+                edited_text = st.text_area("Edit generated text:", st.session_state[f"text_{job['id']}"], key=f"edit_{job['id']}")
+                st.button("Save pdf", key=f"print_{job['id']}")
+                print_text_function(edited_text, job['title'], job['company'])  # Replace with your 
             
 else:
     st.write("Please enter your skills to find matching jobs.")

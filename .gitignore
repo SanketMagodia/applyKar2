@@ -1,2 +1,4 @@
 env/
 chrome-win64/
+.env
+models/

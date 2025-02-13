@@ -8,15 +8,13 @@ from contextlib import closing
 import sqlite3
 import argparse
 from selenium.webdriver.chrome.options import Options
-
-
+from dotenv import load_dotenv
+import os
 '''
-How to run the code: python selenium.py --clear --clean "https://linkedin.com"
+How to run the code: python selenium.py --clear --clean --url "https://linkedin.com" --pages 10
 
 '''
 # linkedin credentials
-USERNAME = ""
-PASSWORD = ""
 
 
 def clean_database(table_name='job_posts'):
@@ -82,16 +80,19 @@ def remove_duplicates_and_old_jobs(database_path='jobs.db'):
 
 
 def process_url(LINK, pages = 10):
+    load_dotenv()
+    USERNAME = os.getenv("USER_NAME")
+    PASSWORD = os.getenv("PASSWORD")
+    print(USERNAME, PASSWORD)
     sm = SkillsExtractor(taxonomy_name="toy")
     #sqlite
     conn = sqlite3.connect('jobs.db')
     cursor = conn.cursor()
     # Open the Chrome browser
-    
-
     chrome_options = Options()
     chrome_options.add_argument("--disable-webrtc")
     chrome_options.add_argument("--disable-gpu")
+    # chrome_options.add_argument("--headless=new")
     driver = webdriver.Chrome(options=chrome_options)
     driver.get("https://www.linkedin.com/login")
 
@@ -103,7 +104,7 @@ def process_url(LINK, pages = 10):
     driver.get(LINK)
     i = 1
     time.sleep(1)
-    page = 1
+    page = 0
     try:
         while page <= int(pages):
             scrollable_element = driver.find_element(By.CSS_SELECTOR, "#main > div > div.scaffold-layout__list-detail-inner.scaffold-layout__list-detail-inner--grow > div.scaffold-layout__list > div")
@@ -191,8 +192,6 @@ if __name__ == "__main__":
     parser.add_argument("--pages", type=str, help="how many pages to scrape ?")
     # Parse the arguments
     args = parser.parse_args()
-
-    
 
     # Execute actions based on arguments
     if args.clear:
